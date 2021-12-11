@@ -33,7 +33,7 @@ font = ImageFont.truetype('pixelmix.ttf', 8)                         # Import th
                                                                      # if you need to change the font please copy new font to the same directory as the stats.py script is located and change the location including the extention of the font in the code [ImageFont.truetype('font_path_or_name', font_size)] 
 
 
-def main():
+def main():#
     # Importing some global vars
     global blnk
     
