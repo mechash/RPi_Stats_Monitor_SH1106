@@ -58,3 +58,32 @@ $ cd /RPi_Stats_Monitor_Sh1106
 $ python3 stats.py
 
 the scrip should execute without any issues 
+
+
+after installing and successfully executeing the scrip we need the script to run every time when reboot or turned on fo that we need to add the some lines to end of a file 
+
+
+Open crontab by typing the following command into your terminal:
+
+crontab -e
+
+If this is the first time you’re opening crontab then select 1 as your editor and hit enter.
+
+Add the following line to the end of the file to run the script:
+
+@reboot ./RPi_Stats_Monitor_SH1106/.stats.sh
+
+
+once you are done adding the line save and exit 
+
+now there is only last step left before we end this that is to give permission to the user to execute the shell script on boot
+for givving the user to access the file 
+first go the the derectoary    where the stats.sh is located
+
+$ cd ~/RPi_Stats_Monitor_SH1106/
+$ sudo chmod +x stats.sh
+
+and you are done 
+
+now reboot the raspberry pi and check if everthing is working fine.
+Thank You.
