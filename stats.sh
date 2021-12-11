@@ -12,6 +12,6 @@
 
 #!/bin/bash
 clear
-cd stats/
+cd RPi_Stats_Monitor_SH1106/
 sleep 5
 python3 stats.py 
