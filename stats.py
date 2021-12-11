@@ -89,11 +89,9 @@ def main():
         draw.rectangle((1, 0, 127, 10), fill="White")
         draw.text((2, 1), "Up Time- " + str(sysUptime)[:7], font=font, fill="black")
         
-        
         #IP
         draw.text((3,12), "IP  " + str(IP,'utf-8'), font=font, fill="white")
         draw.rectangle((0, 10, 128, 22), outline="white")
-        
         
         #CPU usage Bar
         if cpuLoad[0] > cputhresh:
@@ -108,8 +106,7 @@ def main():
             draw.text((3,24),"CPU" , font=font, fill="white")
         #draw.rectangle((cpuBarWidth, 32, cpuBarWidth+100, 42 ), fill="white")cpuBarWidth
             draw.text((cpuBarWidth+4,24),"{0:.2f}".format(cpuLoad[0]) + "%", font=font, fill="white")
-            
-            
+             
         #Temp
         draw.rectangle((0, 22, 128, 43), outline="white")
         if width > minBarWidth:
@@ -117,12 +114,10 @@ def main():
             draw.rectangle((24, 34, width, 40) ,fill="White")
             draw.text((width+4, 33 ), str(tmpCel)+" C",font=font, fill="White")
        
-       
         #RAM usage Bar
         draw.rectangle((0,43 , 64, 64), outline="white")
         draw.text((3,44 ),"RAM "+str(ramUsd),font=font, fill="White")
         draw.text((4,54 ),"/ " + str(ramTot)+" MB",font=font, fill="White")
-        
         
         #Disk Utilization
         draw.text((68,44 ),"SD CARD ",font=font, fill="White")
