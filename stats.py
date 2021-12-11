@@ -1,3 +1,15 @@
+# -------------------------------------------------------------------------------
+# Python script to Monitor UP Time, IP Address, CPU Load, 
+# Temperature, RAM Usage and Dist Utilization
+#
+# Copyright (C) 2021 Ashish Jaiswal, https://mechash.com.
+# All rights reserved.
+#
+# This file is part of https://github.com/mechash/RPi_Stats_Monitor_SH1106.git,
+# and is released under the "MIT License Agreement". Please see the LICENSE file
+# that should have been included as part of this package.
+# -------------------------------------------------------------------------------
+
 import os
 import multiprocessing
 import time
@@ -11,16 +23,15 @@ from luma.core.render import canvas
 from luma.core.interface.serial import i2c
 from luma.oled.device import sh1106
 
-#Setting up OLED Display 
-serial = i2c(port=1, address=0x3C) #refer documentation to find the port and address for the connected OLED Display
-device = sh1106(serial) #selecting the Display for our use case it is SH1106 based OLED Display 
+# Setting up OLED Display 
+serial = i2c(port=1, address=0x3C)                                   # Refer documentation to find the port and address for the connected OLED Display
+device = sh1106(serial)                                              # Selecting the Display for our use case it is SH1106 based OLED Display 
 
-REFRESH_INTERVAL = 0.1
+REFRESH_INTERVAL = 0.1                                               # Refresh or loop delay after the whole code is been executed is done 
 
-blnk = 1
-font = ImageFont.truetype('pixelmix.ttf', 8)
+font = ImageFont.truetype('pixelmix.ttf', 8)                         # Import the Font from the same directory 
+                                                                     # if you need to change the font please copy new font to the same directory as the stats.py script is located and change the location including the extention of the font in the code [ImageFont.truetype('font_path_or_name', font_size)] 
 
- 
 
 def main():
     # Importing some global vars
