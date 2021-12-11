@@ -1,0 +1,60 @@
+Steps to program OLED Stats Display 
+
+
+Enabling & Testing I2C Communication
+
+sudo raspi-config ->  Interface Options -> I2C -> Enable I2C interface 
+sudo reboot
+
+Once your Pi has rebooted, you need to check that the following 
+2 libraries have been installed. You may already have them installed, but it’s worth checking. Run each one of these commands individually in your terminal:
+
+sudo apt-get install python3-smbus
+sudo apt-get install i2c-tools
+
+Once you’ve done that then you can check that your Pi is able to see that your display is connected. You can do this by typing in the following command:
+
+sudo i2cdetect -y 1
+
+You should then see a table, similar to the below, that shows a single pair of characters in it. This code indicates the I2C address of your display.
+
+    0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+30: -- -- -- -- -- -- -- -- -- -- -- -- 3c -- -- --
+40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+50: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
+70: -- -- -- -- -- -- -- --
+
+If your table is returned blank then you’ve either got a wiring issue or I2C communication isn’t turned on. If you get a table full of characters then you’ve probably made a wiring mistake as this happens if SDA is shorted to ground. Go back and re-check your connections to your Pi and display and re-check that you’ve got I2C communication enabled after a reboot.
+
+Don’t proceed with trying to get the script to work if you don’t get the correct response in this step, if your Pi isn’t able to see the display thats connected to it then it won’t be able to communicate with it to get anything displayed.
+
+Insatlling Luma.OLED Display Driver
+
+Install the latest version of the library directly from PyPI with:
+
+$ sudo -H pip3 install --upgrade luma.oled
+
+This will normally retrieve all of the dependencies luma.oled requires and install them automatically.
+
+if you are not able to install this directly please visit https://luma-oled.readthedocs.io/en/latest/software.html for more detailed instruction for installation on to your system
+
+Permissions
+
+luma.oled uses hardware interfaces that require permission to access. After you have successfully installed luma.oled you may want to add the user account that your luma.oled program will run as to the groups that grant access to these interfaces.:
+
+$ sudo usermod -a -G spi,gpio,i2c pi
+
+Once you are dont with this all steps lets get to clone the final repositoary for the actual Script for Displaying Stats 
+
+$ git clone https://github.com/mechash/RPi_Stats_Monitor_SH1106
+
+once you are done cloning lets test the python script to display the stats on the oled display
+
+$ cd /RPi_Stats_Monitor_Sh1106
+$ python3 stats.py
+
+the scrip should execute without any issues 
