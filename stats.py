@@ -3,16 +3,17 @@ import multiprocessing
 import time
 import psutil
 import subprocess
+
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
-
 from demo_opts import get_device
 from luma.core.render import canvas
 from luma.core.interface.serial import i2c
 from luma.oled.device import sh1106
 
-serial = i2c(port=1, address=0x3C)
-device = sh1106(serial)
+#Setting up OLED Display 
+serial = i2c(port=1, address=0x3C) #refer documentation to find the port and address for the connected OLED Display
+device = sh1106(serial) #selecting the Display for our use case it is SH1106 based OLED Display 
 
 REFRESH_INTERVAL = 0.1
 
