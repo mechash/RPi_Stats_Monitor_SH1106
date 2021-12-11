@@ -67,15 +67,14 @@ def main():
         tmpCel = 0
         height = 0
 
-    # Histogram graph
-    cpuLoad = os.getloadavg()
-    cpuPercent = cpuLoad[0] / multiprocessing.cpu_count() * 100
-        # CPU bar
+    # CPU Parameters and data fetch
     cputhresh = 3.5
     minCpuBarH = 31
     maxCpuBarH = 25
     minCpuBarW = 24
     maxCpuBarW = 123
+    cpuLoad = os.getloadavg()
+    cpuPercent = cpuLoad[0] / multiprocessing.cpu_count() * 100
     
 
     # Starting the canvas for the screen
