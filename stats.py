@@ -39,23 +39,20 @@ def main():
     
 
     # Vars:
+    
     # Getting system uptime
     sysUptime = datetime.now() - datetime.fromtimestamp(psutil.boot_time())
 
-    # RAM bar
-    minRamBarH = 30
-    maxRamBarH = 34
-    minRamBarW = 128
-    maxRamBarW = 100
-    ramStat = psutil.virtual_memory()
-    ramTot = ramStat.total >> 20
-    ramUsd = ramStat.used >> 20
-    ramPerc = (ramUsd / ramTot) * 100
-    ramBarWidth = (((100 - ramPerc) * (minRamBarW - maxRamBarW)) / 100) + maxRamBarW
-    
-    
+    # CPU Parameters and data fetch
+    cputhresh = 3.5
+    minCpuBarH = 31
+    maxCpuBarH = 25
+    minCpuBarW = 24
+    maxCpuBarW = 123
+    cpuLoad = os.getloadavg()
+    cpuPercent = cpuLoad[0] / multiprocessing.cpu_count() * 100
 
-    # Temp bar
+    # Temperature Bar Patameter
     maxBarWidth = 128
     minBarWidth = 24
     try:
@@ -67,15 +64,17 @@ def main():
     except:
         tmpCel = 0
         height = 0
-
-    # CPU Parameters and data fetch
-    cputhresh = 3.5
-    minCpuBarH = 31
-    maxCpuBarH = 25
-    minCpuBarW = 24
-    maxCpuBarW = 123
-    cpuLoad = os.getloadavg()
-    cpuPercent = cpuLoad[0] / multiprocessing.cpu_count() * 100
+    
+    # RAM bar
+    minRamBarH = 30
+    maxRamBarH = 34
+    minRamBarW = 128
+    maxRamBarW = 100
+    ramStat = psutil.virtual_memory()
+    ramTot = ramStat.total >> 20
+    ramUsd = ramStat.used >> 20
+    ramPerc = (ramUsd / ramTot) * 100
+    ramBarWidth = (((100 - ramPerc) * (minRamBarW - maxRamBarW)) / 100) + maxRamBarW
     
 
     # Starting the canvas for the screen
