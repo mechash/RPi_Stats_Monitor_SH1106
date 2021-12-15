@@ -17,128 +17,149 @@ import psutil
 import subprocess
 
 from datetime import datetime
-from PIL import Image, ImageDraw, ImageFont
+from PIL import ImageFont
 from demo_opts import get_device
 from luma.core.render import canvas
 from luma.core.interface.serial import i2c
 from luma.oled.device import sh1106
 
 # Setting up OLED Display 
-serial = i2c(port=1, address=0x3C)                                   # Refer documentation to find the port and address for the connected OLED Display
-device = sh1106(serial)                                              # Selecting the Display for our use case it is SH1106 based OLED Display 
+serial = i2c( port = 1 , address = 0x3C )                                   # Refer documentation to find the port and address for the connected OLED Display
+device = sh1106( serial )                                              # Selecting the Display for our use case it is SH1106 based OLED Display 
 
 REFRESH_INTERVAL = 0.1                                               # Refresh or loop delay after the whole code is been executed is done 
 
-font = ImageFont.truetype('pixelmix.ttf', 8)                         # Import the Font from the same directory 
+Font_Pixelmix = ImageFont.truetype( 'pixelmix.ttf' , 8)                         # Import the Font from the same directory 
                                                                      # if you need to change the font please copy new font to the same directory as the stats.py script is located and change the location including the extention of the font in the code [ImageFont.truetype('font_path_or_name', font_size)] 
 
 
-def main():#
-    # Importing some global vars
-    global blnk
+def main():
     
-    cmd = "hostname -I | cut -d\  -f1"
-    IP = subprocess.check_output(cmd, shell = True )
-    cmd = "top -bn1 | grep load | awk '{printf \"CPU: %.2f\", $(NF-2)}'"
-    CPU = subprocess.check_output(cmd, shell = True )
-    cmd = "free -m | awk 'NR==2{printf \"RAM: %s/\", $3 }'"
-    MemUsage = subprocess.check_output(cmd, shell = True )
-    cmd = "df -h | awk '$NF==\"/\"{printf \"%d / %dGB \", $3,$2}'"
-    Disk = subprocess.check_output(cmd, shell = True )
-    cmd = "vcgencmd measure_temp |cut -f 2 -d '='"
-    temp = subprocess.check_output(cmd, shell = True )
-    
+    # Setting up the Drawing Parameters 
 
-    # Vars:
-    
+    # System Uptime
+    min_Sys_H = 0
+    max_Sys_H = 10
+    min_Sys_W = 1
+    max_Sys_W = 127
+
+    # System IP Address
+    min_IP_H = 10
+    max_IP_H = 22
+    min_IP_W = 0
+    max_IP_W = 128
+
+    # CPU and RAM Outline 
+    min_CPU_RAM_H = 22
+    max_CPU_RAM_H = 43
+    min_CPU_RAM_W = 0
+    max_CPU_RAM_W = 128
+
+    # CPU Load
+    min_CPU_Bar_H = 31
+    max_CPU_Bar_H = 25
+    min_CPU_Bar_W = 24
+    max_CPU_Bar_W = 123
+
+    CPU_Threshold = 3.5
+
+    # CPU Temp
+    max_Bar_Width = 128
+    min_Bar_Width = 24
+
+    # RAM
+    min_Ram_H = 43
+    max_Ram_H = 64
+    min_Ram_W = 0
+    max_Ram_W = 64
+
+    # Disk Utilization
+    min_Disk_H = 43 
+    max_Disk_H = 64
+    min_Disk_W = 64
+    max_Disk_W = 128
+
+
+    # Calculations and Feteching Data we need for Displaying on the OLED Display 
+    # Such as System Up Time, Current IP Address, CPU Load, CPU Temperature
+    # RAM Utilization and Disk Utilization
+
     # Getting system uptime
-    sysUptime = datetime.now() - datetime.fromtimestamp(psutil.boot_time())
+    sysUptime = datetime.now() - datetime.fromtimestamp( psutil.boot_time() )
 
-    # CPU Parameters and data fetch
-    cputhresh = 3.5
-    minCpuBarH = 31
-    maxCpuBarH = 25
-    minCpuBarW = 24
-    maxCpuBarW = 123
-    cpuLoad = os.getloadavg()
-    cpuPercent = cpuLoad[0] / multiprocessing.cpu_count() * 100
+    # Getting System IP Address
+    cmd = "hostname -I | cut -d\  -f1"
+    IP = subprocess.check_output( cmd , shell = True )
 
-    # Temperature Bar Patameter
-    maxBarWidth = 128
-    minBarWidth = 24
+    # Getting CPU Load data 
+    CPU_Load = os.getloadavg()
+    CPU_Percent = CPU_Load[0] / multiprocessing.cpu_count() * 100
+    CPU_Bar_Width_1 = ( ( ( 190 - CPU_Percent ) * ( min_CPU_Bar_W - max_CPU_Bar_W ) ) / 100 ) + max_CPU_Bar_W
+    CPU_Bar_Width_2 = ( ( ( 110 - CPU_Percent ) * ( min_CPU_Bar_W - max_CPU_Bar_W ) ) / 100 ) + max_CPU_Bar_W
+    # Getting CPU Temperature Data
     try:
-        with open("/sys/class/thermal/thermal_zone0/temp", "r") as temp:
-            tmpCel = float(temp.read()[:2])
-            tmpPercent = (tmpCel / 60) * 100
-
-            width = (((30 - tmpPercent) * ( minBarWidth - maxBarWidth)) / 100) + minBarWidth
+        with open( "/sys/class/thermal/thermal_zone0/temp" , "r" ) as temp:
+            Temp_Cel = float( temp.read()[:2] )
+            Temp_Percent = ( Temp_Cel / 60 ) * 100
+            Bar_Width = ( ( ( 30 - Temp_Percent ) * ( min_Bar_Width - max_Bar_Width ) ) / 100) + min_Bar_Width
+            
     except:
-        tmpCel = 0
-        height = 0
+        Temp_Cel = 0
+        
+    # Getting RAM Utilization Data
+    RAM_Stat = psutil.virtual_memory()
+    RAM_Tot = RAM_Stat.total >> 20
+    RAM_Usd = RAM_Stat.used >> 20
     
-    # RAM bar
-    minRamBarH = 30
-    maxRamBarH = 34
-    minRamBarW = 128
-    maxRamBarW = 100
-    ramStat = psutil.virtual_memory()
-    ramTot = ramStat.total >> 20
-    ramUsd = ramStat.used >> 20
-    ramPerc = (ramUsd / ramTot) * 100
-    ramBarWidth = (((100 - ramPerc) * (minRamBarW - maxRamBarW)) / 100) + maxRamBarW
+    # Getting Disk Utilization Data
+    cmd = "df -h | awk '$NF==\"/\"{printf \"%d / %dGB \", $3,$2}'"
+    Disk = subprocess.check_output( cmd , shell = True )
     
 
     # Starting the canvas for the screen
-    with canvas(device, dither=True) as draw:
+    with canvas( device , dither = True ) as draw:
  
+        # Drawing OLED Dislay (Outline)
+        draw.rectangle( device.bounding_box , outline = "white" )
 
-        # Main Outline
-        draw.rectangle(device.bounding_box, outline="white")
-
+        # Drawing System Uptime (Outline and Text)
+        draw.rectangle( ( min_Sys_W , min_Sys_H , max_Sys_W , max_Sys_H ) , fill = "White" )
+        draw.text( ( min_Sys_W + 1 , min_Sys_H + 1 ) , "Up Time- " + str(sysUptime)[:7] , font = Font_Pixelmix , fill="Black")
+        
+        # Drawing IP Address (Outline and Text)
+        draw.rectangle( ( min_IP_W , min_IP_H , max_IP_W , max_IP_H ) , outline = "White" )
+        draw.text( ( min_IP_W + 3 , min_IP_H + 2) , "IP  " + str( IP,'utf-8' ) , font = Font_Pixelmix, fill = "White" ) 
+        
+        # Drawing CPU and RAM (Outline)
+        draw.rectangle( ( min_CPU_RAM_W , min_CPU_RAM_H , max_CPU_RAM_W , max_CPU_RAM_H ) , outline = "White")
+        
+        # Drawing CPU usage (Bar and Text)
+        if CPU_Load[0] > CPU_Threshold :
+            draw.rectangle ( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_1 , max_CPU_Bar_H ) , fill = "white" )
+            draw.text( ( 3 , 24 ) , "CPU" , font = Font_Pixelmix , fill = "white" )
+            draw.text( ( CPU_Bar_Width_1 + 4 , 24 ) , "{0:.2f}".format( CPU_Load[0] ) + "%" , font = Font_Pixelmix , fill = "White")
+        else :
+            draw.rectangle( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_2 , max_CPU_Bar_H ) , fill = "white" )
+            draw.text( ( 3 , 24 ) , "CPU" , font = Font_Pixelmix , fill = "white" )
+            draw.text( ( CPU_Bar_Width_2 + 4 , 24 ) , "{0:.2f}".format( CPU_Load[0] ) + "%" , font = Font_Pixelmix, fill = "white" )
+            
+        # Drawing CPU Temperature (Bar and Text)   
+        if Bar_Width > min_Bar_Width:
+            draw.text( ( 3 , 33 ) , "TMP" , font = Font_Pixelmix , fill = "White" )
+            draw.rectangle( ( 24 , 34 , Bar_Width , 40 ) , fill = "White" )
+            draw.text( ( Bar_Width + 4 , 33 ) , str( Temp_Cel ) + " C" , font = Font_Pixelmix, fill = "White" )
        
-        # System Uptime
-        draw.rectangle((1, 0, 127, 10), fill="White")
-        draw.text((2, 1), "Up Time- " + str(sysUptime)[:7], font=font, fill="black")
+        # Drawing RAM Utilization (Outline and Text)
+        draw.rectangle( ( min_Ram_W , min_Ram_H , max_Ram_W , max_Ram_H ), outline = "white" )
+        draw.text( ( 3 , 44 ) , "RAM " + str( RAM_Usd ) , font = Font_Pixelmix , fill = "White" )
+        draw.text( ( 4 , 54 ) , "/ " + str( RAM_Tot ) + " MB" , font = Font_Pixelmix , fill = "White" )
         
-        #IP
-        draw.text((3,12), "IP  " + str(IP,'utf-8'), font=font, fill="white")
-        draw.rectangle((0, 10, 128, 22), outline="white")
-        
-        #CPU usage Bar
-        if cpuLoad[0] > cputhresh:
-            cpuBarWidth = (((190 - cpuPercent) * (minCpuBarW - maxCpuBarW)) / 100) + maxCpuBarW
-            draw.rectangle((minCpuBarW, minCpuBarH, cpuBarWidth, maxCpuBarH), fill="white")
-            draw.text((3,24),"CPU" , font=font, fill="white")
-        #draw.rectangle((cpuBarWidth, 32, cpuBarWidth+100, 42 ), fill="white")cpuBarWidth
-            draw.text((cpuBarWidth+4,24),"{0:.2f}".format(cpuLoad[0]) + "%", font=font, fill="white")
-        else:
-            cpuBarWidth = (((110 - cpuPercent) * (minCpuBarW - maxCpuBarW)) / 100) + maxCpuBarW
-            draw.rectangle((minCpuBarW, minCpuBarH, cpuBarWidth, maxCpuBarH), fill="white")
-            draw.text((3,24),"CPU" , font=font, fill="white")
-        #draw.rectangle((cpuBarWidth, 32, cpuBarWidth+100, 42 ), fill="white")cpuBarWidth
-            draw.text((cpuBarWidth+4,24),"{0:.2f}".format(cpuLoad[0]) + "%", font=font, fill="white")
-             
-        #Temp
-        draw.rectangle((0, 22, 128, 43), outline="white")
-        if width > minBarWidth:
-            draw.text((3, 33 ), "TMP",font=font, fill="White")
-            draw.rectangle((24, 34, width, 40) ,fill="White")
-            draw.text((width+4, 33 ), str(tmpCel)+" C",font=font, fill="White")
-       
-        #RAM usage Bar
-        draw.rectangle((0,43 , 64, 64), outline="white")
-        draw.text((3,44 ),"RAM "+str(ramUsd),font=font, fill="White")
-        draw.text((4,54 ),"/ " + str(ramTot)+" MB",font=font, fill="White")
-        
-        #Disk Utilization
-        draw.text((68,44 ),"SD CARD ",font=font, fill="White")
-        draw.rectangle((64,43 , 128, 64), outline="white")
-        draw.text((68, 54), str(Disk,'utf-8'), font=font, fill="white")
-
-        
-
+        # Drawing Disk Utilization (Outline and Text)
+        draw.rectangle( ( min_Disk_W , min_Disk_H , max_Disk_W , max_Disk_H ) , outline = "white" )
+        draw.text( ( 68 , 44 ) , "SD CARD " , font = Font_Pixelmix , fill = "White" )
+        draw.text( ( 68 , 54) , str( Disk , 'utf-8' ) , font = Font_Pixelmix , fill = "white" )
 
 
 while True:
     main()
-    time.sleep(REFRESH_INTERVAL)
+    time.sleep( REFRESH_INTERVAL )
