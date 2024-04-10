@@ -111,7 +111,13 @@ def main():
     RAM_Stat = psutil.virtual_memory()
     RAM_Tot = RAM_Stat.total >> 20
     RAM_Usd = RAM_Stat.used >> 20
-    
+
+    # Getting CPU Frequency
+
+    with open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq") as freq:
+        CPU_Freq = int(freq.read())
+        CPU_Freq_MHz = CPU_Freq / 1000
+
     # Getting Disk Utilization Data
     cmd = "df -h | awk '$NF==\"/\"{printf \"%d / %dGB \", $3,$2}'"
     Disk = subprocess.check_output( cmd , shell = True )
@@ -135,15 +141,19 @@ def main():
         draw.rectangle( ( min_CPU_RAM_W , min_CPU_RAM_H , max_CPU_RAM_W , max_CPU_RAM_H ) , outline = "White")
         
         # Drawing CPU usage (Bar and Text)
-        if CPU_Load[0] > CPU_Threshold :
-            draw.rectangle ( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_1 , max_CPU_Bar_H ) , fill = "white" )
-            draw.text( ( 3 , 24 ) , "CPU" , font = Font_Pixelmix , fill = "white" )
-            draw.text( ( CPU_Bar_Width_1 + 4 , 24 ) , "{0:.2f}".format( CPU_Load[0] ) + "%" , font = Font_Pixelmix , fill = "White")
-        else :
-            draw.rectangle( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_2 , max_CPU_Bar_H ) , fill = "white" )
-            draw.text( ( 3 , 24 ) , "CPU" , font = Font_Pixelmix , fill = "white" )
-            draw.text( ( CPU_Bar_Width_2 + 4 , 24 ) , "{0:.2f}".format( CPU_Load[0] ) + "%" , font = Font_Pixelmix, fill = "white" )
-            
+        # if CPU_Load[0] > CPU_Threshold :
+        #     draw.rectangle ( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_1 , max_CPU_Bar_H ) , fill = "white" )
+        #     draw.text( ( 3 , 24 ) , "CPU" , font = Font_Pixelmix , fill = "white" )
+        #     draw.text( ( CPU_Bar_Width_1 + 4 , 24 ) , "{0:.2f}".format( CPU_Load[0] ) + "%" , font = Font_Pixelmix , fill = "White")
+        # else :
+        #     draw.rectangle( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_2 , max_CPU_Bar_H ) , fill = "white" )
+        #     draw.text( ( 3 , 24 ) , "CPU" , font = Font_Pixelmix , fill = "white" )
+        #     draw.text( ( CPU_Bar_Width_2 + 4 , 24 ) , "{0:.2f}".format( CPU_Load[0] ) + "%" , font = Font_Pixelmix, fill = "white" )
+        
+        # Drawing CPU usage and Frequency
+        draw.rectangle ( ( min_CPU_Bar_W , min_CPU_Bar_H , CPU_Bar_Width_1 , max_CPU_Bar_H ) , fill = "white" )
+        draw.text( ( 3 , 24 ) , "CPU : " + "{0:.2f}".format( CPU_Load[0] ) + " % @ " +  str( CPU_Freq_MHz ) + " MHz " , font = Font_Pixelmix , fill = "white" )
+        
         # Drawing CPU Temperature (Bar and Text)   
         if Bar_Width > min_Bar_Width:
             draw.text( ( 3 , 33 ) , "TMP" , font = Font_Pixelmix , fill = "White" )
@@ -157,7 +167,7 @@ def main():
         
         # Drawing Disk Utilization (Outline and Text)
         draw.rectangle( ( min_Disk_W , min_Disk_H , max_Disk_W , max_Disk_H ) , outline = "white" )
-        draw.text( ( 68 , 44 ) , "SD CARD " , font = Font_Pixelmix , fill = "White" )
+        draw.text( ( 68 , 44 ) , "Storage " , font = Font_Pixelmix , fill = "White" )
         draw.text( ( 68 , 54) , str( Disk , 'utf-8' ) , font = Font_Pixelmix , fill = "white" )
 
 
